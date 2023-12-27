@@ -1,0 +1,60 @@
+version: "3.4"
+
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      - APP_ADDR
+      - APP_WORKERS
+      - APP_BUFFERSIZE
+      - APP_TIMEOUT
+      - APP_LOGLEVEL
+      - APP_CACHESIZE
+
+      - DB_DSN=postgres://$DB_USER:$DB_PASS@$DB_ADDR/$DB_NAME
+
+      - NATS_ADDR
+      - NATS_STREAM
+      - NATS_CONSUMER
+    volumes:
+      - ../config/stream.json:/app/stream.json
+      - ../config/consumer.json:/app/consumer.json
+
+    depends_on:
+      nats:
+        condition: service_started
+      db:
+        condition: service_healthy
+
+  nats:
+    image: nats:2.10.7-alpine3.18
+    command: "nats-server -js --store_dir /data -m 5555"
+    ports:
+      - "4222:4222"
+      - "5555:5555"
+    volumes:
+      - ./_nats_data:/data
+
+
+  db:
+    image: postgres:16.1-alpine3.18
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASS
+      POSTGRES_DB: $DB_NAME
+      
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $DB_USER -d $DB_NAME"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+      start_period: 2s
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./_db_data:/var/lib/postgresql/data
