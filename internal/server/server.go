@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Service interface {
@@ -34,7 +35,9 @@ func New(c Config) (*Server, error) {
 		service: c.Service,
 	}
 
+	router.Handle("/metrics", promhttp.Handler())
 	router.Get("/orders/{id}", s.GetHandler)
+
 	return s, nil
 }
 

@@ -23,6 +23,10 @@ type Service interface {
 	Process(ctx context.Context, message []byte) error
 }
 
+type Metrics interface {
+	MessageProcessed()
+}
+
 type Config struct {
 	Workers      int
 	ChBufferSize int
@@ -30,6 +34,7 @@ type Config struct {
 	Logger       *slog.Logger
 	Queue        Queue
 	Service      Service
+	Metrics      Metrics
 }
 
 type Saver struct {
@@ -39,6 +44,7 @@ type Saver struct {
 	logger       *slog.Logger
 	queue        Queue
 	service      Service
+	metrics      Metrics
 }
 
 func New(c Config) (*Saver, error) {
@@ -58,9 +64,10 @@ func New(c Config) (*Saver, error) {
 		workers:      c.Workers,
 		chBufferSize: c.ChBufferSize,
 		timeout:      c.Timeout,
+		logger:       c.Logger,
 		queue:        c.Queue,
 		service:      c.Service,
-		logger:       c.Logger,
+		metrics:      c.Metrics,
 	}, nil
 }
 
@@ -113,6 +120,7 @@ func (s *Saver) Run(ctx context.Context) error {
 					if perr = m.Ack(); perr != nil {
 						s.logger.Error("cannot ack message", slog.String("error", perr.Error()))
 					}
+					s.metrics.MessageProcessed()
 				}
 			}
 		}()

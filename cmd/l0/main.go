@@ -13,6 +13,7 @@ import (
 	"github.com/swmh/wbl0/internal/app"
 	"github.com/swmh/wbl0/internal/cache"
 	"github.com/swmh/wbl0/internal/config"
+	"github.com/swmh/wbl0/internal/metrics"
 	"github.com/swmh/wbl0/internal/natsstream"
 	"github.com/swmh/wbl0/internal/repo"
 	"github.com/swmh/wbl0/internal/saver"
@@ -122,6 +123,8 @@ func Initialize() (*app.App, error) {
 		return nil, fmt.Errorf("cannot create nats: %w", err)
 	}
 
+	met := metrics.New()
+
 	sav, err := saver.New(saver.Config{
 		Workers:      cfg.App.Workers,
 		ChBufferSize: cfg.App.BufferSize,
@@ -129,6 +132,7 @@ func Initialize() (*app.App, error) {
 		Logger:       logger,
 		Queue:        ns,
 		Service:      serviceSaver,
+		Metrics:      met,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("cannot create saver: %w", err)

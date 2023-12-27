@@ -58,3 +58,28 @@ services:
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./_db_data:/var/lib/postgresql/data
+
+  nats-exporter:
+    image: natsio/prometheus-nats-exporter:0.8.0
+    command: "-jsz all http://nats:5555"
+    ports:
+      - 7777:7777
+    depends_on:
+      - nats
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - ./infra/grafana:/etc/grafana/provisioning/
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: password
+    ports:
+      - 3000:3000
