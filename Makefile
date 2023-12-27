@@ -1,9 +1,10 @@
 BASE := ./deployments/docker-compose.yml
-DEV := ./deployments/docker-compose.dev.yml
 ENV := ./deployments/.env.default
 
 BASEF := -f $(BASE) --env-file $(ENV)
-DEVF := -f $(BASE) -f $(DEV) --env-file $(ENV)
+
+test:
+	go test ./...
 
 generate:
 	sqlc generate
@@ -28,4 +29,4 @@ compose-down:
 
 
 
-.PHONY: generate lint build 
+.PHONY: test generate lint build compose-build compose-up compose-down 

@@ -13,12 +13,14 @@ type Order struct {
 	Value []byte
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.39.1 --name=Repo --inpackage --with-expecter
 type Repo interface {
 	Get(ctx context.Context, id string) ([]byte, error)
 	GetNOrders(ctx context.Context, limit int) ([]Order, error)
 	IsNoSuchRow(err error) bool
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.39.1 --name=Cache --inpackage --with-expecter
 type Cache interface {
 	Get(ctx context.Context, id string) ([]byte, error)
 	Set(ctx context.Context, id string, value []byte) error

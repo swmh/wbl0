@@ -7,14 +7,14 @@ import (
 	"log/slog"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.39.1 --name=Cache --inpackage --with-expecter
 type Cache interface {
 	Set(ctx context.Context, key string, value []byte) error
-	// Get(ctx context.Context, key string) ([]byte, error)
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.39.1 --name=Repo --inpackage --with-expecter
 type Repo interface {
 	Insert(ctx context.Context, id string, value []byte) error
-	Get(ctx context.Context, id string) ([]byte, error)
 	IsAlreadyExists(err error) bool
 }
 
@@ -51,8 +51,6 @@ func (s *Service) Process(ctx context.Context, message []byte) error {
 	if err != nil {
 		return err
 	}
-
-	slog.Debug("marshal struct", slog.String("message", string(message)))
 
 	err = s.repo.Insert(ctx, order.OrderUID, message)
 	if err != nil {

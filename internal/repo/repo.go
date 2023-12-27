@@ -30,7 +30,7 @@ func New(connString string) (*Repo, error) {
 func (r *Repo) Get(ctx context.Context, id string) ([]byte, error) {
 	order, err := r.queries.GetOrder(ctx, id)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	return order.Value, nil
