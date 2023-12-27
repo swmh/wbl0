@@ -78,6 +78,7 @@ func (s *Saver) Run(ctx context.Context) error {
 
 	for i := 0; i < s.workers; i++ {
 		wg.Add(1)
+		i := i
 		go func() {
 			defer wg.Done()
 
@@ -93,7 +94,7 @@ func (s *Saver) Run(ctx context.Context) error {
 						return
 					}
 
-					s.logger.Debug("received message", slog.String("data", string(m.Data())))
+					s.logger.Debug("received message", slog.Int("worker", i), slog.String("data", string(m.Data())))
 
 					cctx, cancel := context.WithTimeout(ctx, s.timeout)
 					defer cancel()
